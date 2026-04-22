@@ -122,6 +122,17 @@ export default function Survey() {
             />
           </div>
 
+          <div className="form-group">
+            <label className="form-label">Teléfono o mail de contacto (Opcional)</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Ej. juan@gmail.com / +54 9 11..."
+              value={formData.contactoOpcional}
+              onChange={(e) => setFormData({ ...formData, contactoOpcional: e.target.value })}
+            />
+          </div>
+
           <hr style={{ border: 0, height: '1px', background: 'var(--border-color)', margin: '2rem 0' }} />
 
           <div className="form-group">
@@ -151,17 +162,6 @@ export default function Survey() {
               </div>
             </div>
           )}
-
-          <div className="form-group">
-            <label className="form-label">Teléfono o mail de contacto (Opcional)</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Ej. juan@gmail.com / +54 9 11..."
-              value={formData.contactoOpcional}
-              onChange={(e) => setFormData({ ...formData, contactoOpcional: e.target.value })}
-            />
-          </div>
 
           <div className="form-group">
             <label className="form-label">3. ¿Cómo percibís el costo de tu servicio contable actual?</label>
