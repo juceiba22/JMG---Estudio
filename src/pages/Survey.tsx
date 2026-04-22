@@ -2,10 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db, isMockFirebase } from '../lib/firebase';
 import { MessageCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 export default function Survey() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     empresa: '',
     nombreContacto: '',
