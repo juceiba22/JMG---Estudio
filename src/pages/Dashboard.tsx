@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, isMockFirebase } from '../lib/firebase';
 import { 
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer, 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend 
@@ -16,17 +16,28 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const querySnapshot = await getDocs(collection(db, 'surveys'));
-        const surveys: any[] = [];
-        querySnapshot.forEach((doc) => {
-          surveys.push(doc.data());
-        });
-        
-        if (surveys.length > 0) {
-          setData(surveys);
+        if (isMockFirebase) {
+          const localData = JSON.parse(localStorage.getItem('mockSurveys') || 'null');
+          if (localData && localData.length > 0) {
+            setData(localData);
+            setErrorStatus("Modo Local: Firebase no configurado. Mostrando datos guardados en tu navegador.");
+          } else {
+            setData(mockData);
+            setErrorStatus("Modo Local: Firebase no configurado. Mostrando datos de prueba estadísticos.");
+          }
+          await new Promise(r => setTimeout(r, 600));
         } else {
-          // If empty, show empty state
-          setData([]);
+          const querySnapshot = await getDocs(collection(db, 'surveys'));
+          const surveys: any[] = [];
+          querySnapshot.forEach((doc) => {
+            surveys.push(doc.data());
+          });
+          
+          if (surveys.length > 0) {
+            setData(surveys);
+          } else {
+            setData([]);
+          }
         }
       } catch (err) {
         console.error("Firebase fetch error, using mock data for demonstration: ", err);

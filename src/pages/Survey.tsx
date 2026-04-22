@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, isMockFirebase } from '../lib/firebase';
 import { MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,7 +40,7 @@ export default function Survey() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Auto add timestamp
     const submitData = {
       ...formData,
@@ -48,7 +48,19 @@ export default function Survey() {
     };
 
     try {
-      await addDoc(collection(db, 'surveys'), submitData);
+      if (isMockFirebase) {
+        // Fallback local
+        const existing = JSON.parse(localStorage.getItem('mockSurveys') || '[]');
+        existing.push(submitData);
+        localStorage.setItem('mockSurveys', JSON.stringify(existing));
+        await new Promise(r => setTimeout(r, 800)); // fake delay
+      } else {
+        const addDocPromise = addDoc(collection(db, 'surveys'), submitData);
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Timeout de conexión a Firebase. ¿Está habilitada la base de datos Firestore?")), 6000);
+        });
+        await Promise.race([addDocPromise, timeoutPromise]);
+      }
       setSubmitted(true);
     } catch (error) {
       console.error("Error al enviar la encuesta: ", error);
@@ -76,37 +88,37 @@ export default function Survey() {
         <div className="logo-mock">JMG</div>
         <div className="logo-sub">Estudio Contable y Consultoría</div>
       </div>
-      
+
       <div className="card">
-        <h1 style={{ textAlign: 'center', fontSize: '1.8rem', marginBottom: '0.5rem' }}>📊 Encuesta sobre servicios contables</h1>
+        <h1 style={{ textAlign: 'center', fontSize: '1.8rem', marginBottom: '0.5rem' }}>📊 Encuesta </h1>
         <p style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          Estamos realizando una breve encuesta para conocer mejor las necesidades de profesionales y emprendedores en materia contable.
-          <br/>Tus respuestas son confidenciales y nos ayudarán a mejorar nuestros servicios. (Duración: menos de 1 minuto)
+          Estamos realizando una breve encuesta sobre servicios contables e impositivos para conocer mejor las necesidades de profesionales y emprendedores en materia contable.
+          <br />Tus respuestas son confidenciales y nos ayudarán a mejorar nuestros servicios. (Duración: menos de 1 minuto)
         </p>
 
         <form onSubmit={handleSubmit}>
-          
+
           <div className="form-group">
             <label className="form-label">Nombre de tu Empresa / Emprendimiento <span className="required">*</span></label>
-            <input 
+            <input
               required
-              type="text" 
-              className="form-input" 
+              type="text"
+              className="form-input"
               placeholder="Ej. Mi Proyecto SRL"
               value={formData.empresa}
-              onChange={(e) => setFormData({...formData, empresa: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, empresa: e.target.value })}
             />
           </div>
 
           <div className="form-group">
             <label className="form-label">Tu Nombre <span className="required">*</span></label>
-            <input 
+            <input
               required
-              type="text" 
-              className="form-input" 
+              type="text"
+              className="form-input"
               placeholder="Ej. Juan Pérez"
               value={formData.nombreContacto}
-              onChange={(e) => setFormData({...formData, nombreContacto: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, nombreContacto: e.target.value })}
             />
           </div>
 
@@ -139,6 +151,17 @@ export default function Survey() {
               </div>
             </div>
           )}
+
+          <div className="form-group">
+            <label className="form-label">Teléfono o mail de contacto (Opcional)</label>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Ej. juan@gmail.com / +54 9 11..."
+              value={formData.contactoOpcional}
+              onChange={(e) => setFormData({ ...formData, contactoOpcional: e.target.value })}
+            />
+          </div>
 
           <div className="form-group">
             <label className="form-label">3. ¿Cómo percibís el costo de tu servicio contable actual?</label>
@@ -205,26 +228,13 @@ export default function Survey() {
             </div>
           </div>
 
-          <div className="form-group" style={{ marginBottom: '2.5rem' }}>
-            <label className="form-label" style={{ display: 'flex', flexDirection: 'column' }}>
-              8. Si querés que te contactemos, dejanos tu email o WhatsApp (Opcional)
-            </label>
-            <input 
-              type="text" 
-              className="form-input" 
-              placeholder="Ej. juan@gmail.com / +54 9 11..."
-              value={formData.contactoOpcional}
-              onChange={(e) => setFormData({...formData, contactoOpcional: e.target.value})}
-            />
-          </div>
-
-          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ marginTop: '1.5rem' }}>
             {isSubmitting ? 'Enviando respuestas...' : 'Enviar Encuesta'}
           </button>
         </form>
       </div>
 
-      <a 
+      <a
         href="https://wa.me/5491173855955?text=Hola,%20les%20escribo%20desde%20el%20formulario%20de%20encuestas."
         className="whatsapp-float"
         target="_blank"

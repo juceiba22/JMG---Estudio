@@ -14,4 +14,6 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 
+export const isMockFirebase = firebaseConfig.apiKey === "mock-key";
+
 export { app, db, collection, addDoc, getDocs, orderBy, query };
