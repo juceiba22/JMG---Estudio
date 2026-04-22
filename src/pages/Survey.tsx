@@ -75,9 +75,6 @@ export default function Survey() {
       <div className="container animate-fade-in" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
         <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--primary)' }}>¡Gracias por tus respuestas!</h2>
         <p style={{ fontSize: '1.2rem' }}>Tus datos han sido registrados de forma confidencial y nos ayudarán a mejorar.</p>
-        <button className="btn btn-primary" style={{ marginTop: '2rem', width: 'auto' }} onClick={() => navigate('/dashboard')}>
-          Ver Estadísticas (Admin)
-        </button>
       </div>
     );
   }
